@@ -2,18 +2,53 @@ import { hash } from "bcrypt"
 import { compare } from "bcrypt"
 import userModel from "../models/userModel.js"
 import { createToken } from "../utils/token.js"
+export const getAllUsers = async (req, res, next) => {
+    try {
+      const users = await userModel.find();
+      return res.json({ message: "helo", users });
+    } catch (error) {
+      console.log(error);
+    }
+  };
 export const loginControl=async(req,res,next)=>{
     const{email,password}=req.body
-    console.log(email,password)
+    const user=await userModel.findOne({email})
+    if(!user) return res.status(401).json({message:"user does not exists"})
+    const isPassCorrect=await compare(password,user.password)
+    if(!isPassCorrect) {
+        return res.status(403).json({message:"incorrect password"})
+    }
+
+    try {
+        const token=createToken(user._id.toString(),user.email,"7d")
+        const expires=new Date()
+        expires.setDate(expires.getDate() + 7);
+        res.status(200).cookie(process.env.COOKIE_NAME,token,{
+            expires,
+            httpOnly:true,
+            signed:true
+        })
+        return res.status(200).json({message:"logged in successfully"})
+
+    } catch (error) {
+        console.log(error)
+        return res.json({message:"an error occured"})
+    }
+    
 }
 export const signUpControl=async(req,res,next)=>{
     const {name,email,password}=req.body
-    const userExists=userModel.findOne({email})
+    const userExists=await userModel.findOne({email})
     if(userExists) return res.json({message:"user already exists"})
     const hashedPass=await hash(password,10)
-    const newUser=new userModel({name,email,hashedPass})
+    const newUser=new userModel({name,email,password:hashedPass})
     newUser.save()
     try {
+        res.clearCookie(process.env.COOKIE_NAME, {
+            httpOnly: true,
+            signed: true,
+            secure:true,
+          });
         const token =createToken(newUser._id.toString(),newUser.email,"7d")
         const expires=new Date()
         expires.setDate(expires.getDate() + 7);
@@ -21,7 +56,7 @@ export const signUpControl=async(req,res,next)=>{
             expires,
             httpOnly: true,
             signed: true,
-            // domain:"localhost",
+            
           });
           return res.json({message:"user created successfully"})
     } catch (error) {
