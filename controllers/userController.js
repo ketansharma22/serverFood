@@ -21,6 +21,7 @@ export const loginControl=async(req,res,next)=>{
 
     try {
         const token=createToken(user._id.toString(),user.email,"7d")
+        
         const expires=new Date()
         expires.setDate(expires.getDate() + 7);
         res.status(200).cookie(process.env.COOKIE_NAME,token,{
@@ -65,4 +66,22 @@ export const signUpControl=async(req,res,next)=>{
     }
     
     
+}
+
+export const verifyUser=async(req,res,next)=>{
+  try {
+    const user=await userModel.findById(res.locals.jwtData.id)
+    console.log(user)
+    if(!user) return res.status(401).json({message:"user not registered or token malfunctioned"})
+
+    if(user._id.toString()!==res.locals.jwtData.id){
+      return res.status(401).json({message:"permission didn't matched"})
+    }
+
+    return res.status(200).json({message:"done",email:user.email,name:user.name
+    })
+  } catch (error) {
+    console.log(error)
+    return res.status(401).json({message:"an error occured",cause:error.message})
+  }
 }
