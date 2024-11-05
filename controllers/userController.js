@@ -71,7 +71,7 @@ export const signUpControl=async(req,res,next)=>{
 export const verifyUser=async(req,res,next)=>{
   try {
     const user=await userModel.findById(res.locals.jwtData.id)
-    console.log(user)
+    
     if(!user) return res.status(401).json({message:"user not registered or token malfunctioned"})
 
     if(user._id.toString()!==res.locals.jwtData.id){
@@ -83,5 +83,25 @@ export const verifyUser=async(req,res,next)=>{
   } catch (error) {
     console.log(error)
     return res.status(401).json({message:"an error occured",cause:error.message})
+  }
+}
+
+export const logoutUser=async(req,res,next)=>{
+  try {
+    console.log("logout")
+    const user=await userModel.findById(res.locals.jwtData.id)
+    if(!user){
+      return res.status(401).json({message:"user not registered or token malfunctioned"})
+    }
+    if(user._id.toString()!== res.locals.jwtData.id){
+      return res.status(401).send("Permissions didn't match");
+    }
+  
+    res.clearCookie(process.env.COOKIE_NAME,{httpOnly:true,signed:true}
+    )
+    return res.status(200).json({message: "logged out", name: user.name, email: user.email })
+  } catch (error) {
+   console.log(error)
+   return res.status(401).json({message:"an error occured"}) 
   }
 }
