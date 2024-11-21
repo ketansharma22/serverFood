@@ -7,4 +7,5 @@ userRouter.post('/login',loginControl)
 userRouter.post('/signup',signUpControl)
 userRouter.get('/auth-status',verifyToken,verifyUser)
 userRouter.get('/logout',verifyToken,logoutUser)
+
 export default userRouter
