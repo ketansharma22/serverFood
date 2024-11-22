@@ -1,5 +1,5 @@
-import { hash } from "bcrypt"
-import { compare } from "bcrypt"
+import hash  from "bcryptjs";
+import compare from "bcryptjs";
 import userModel from "../models/userModel.js"
 import fsqDevelopers from '@api/fsq-developers';
 import { createToken } from "../utils/token.js"
