@@ -1,7 +1,7 @@
-import hash  from "bcryptjs";
-import compare from "bcryptjs";
+import { hash } from "bcrypt"
+import { compare } from "bcrypt"
 import userModel from "../models/userModel.js"
-import fsqDevelopers from '@api/fsq-developers';
+// import fsqDevelopers from '@api/fsq-developers';
 import { createToken } from "../utils/token.js"
 import axios from 'axios'
 export const getAllUsers = async (req, res, next) => {
